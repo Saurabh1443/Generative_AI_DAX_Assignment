@@ -2,8 +2,31 @@ import openai
 import time
 
 
-openai.api_key  = "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"
-print("If you want end the interview type EXIT")
+openai.api_key  = ""
+print("If you want end the interview type EXIT\n")
+
+
+
+
+def get_completion(prompt, model="gpt-3.5-turbo"): # Andrew mentioned that the prompt/ completion paradigm is preferable for this class
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        temperature=0, # this is the degree of randomness of the model's output
+    )
+    return response.choices[0].message["content"]
+
+def summarize(content):
+    prompt = f"""
+        Your task is to generate a short summary of a the given tet
+        response from an Expert JS Interviewer. 
+        Summarize the review below, delimited by triple 
+        backticks, in at most 30 words. 
+        Review: ```{content}```
+    """
+    response = get_completion(prompt)
+    return response
 
 def get_completion_from_messages(messages, model="gpt-3.5-turbo", temperature=0):
     response = openai.ChatCompletion.create(
@@ -30,28 +53,42 @@ You can also provide hints or guidance if the candidate seems stuck. \
 Remember, the goal is to assess their expertise and problem-solving skills. \
 After completing the technical questions, you may inquire about the candidate's experience and projects. \
 Make sure to maintain a professional and respectful tone throughout the interview. \
-Good luck with the interview process!
+Good luck with the interview process! \
+
 """}
  ]  
+
+# def Summarize_Context(Context):
+
+
 
 while(True):
     try:
         prompt = input("Candidate : ")
-        if prompt.strip().lower()=='bye':
-            print(f"Interviewer : Thanks:) Your Interview is Over")
+        if prompt.strip().lower()=='exit':
+            print(f"Interviewer : Thanks! Your Interview is completed")
             break
+        prompt_1 = summarize(prompt)
+        # print(f"Summarize promt : {prompt_1}\n")
         context.append({'role':'user', 'content':f"{prompt}"})
         response = get_completion_from_messages(context) 
-        context.append({'role':'assistant', 'content':f"{response}"})
-        print(f"Interviewer : {response}")
+        response_1 = summarize(response)
+        print(f"Summarize response : {response_1}\n")
+        context.append({'role':'assistant', 'content':f"{response_1}"})
+
+       
+        print(f"Interviewer : {response}\n")
+
+    
         
         
     except openai.error.ServiceUnavailableError as e:
         print("I want rest now!!")
-        time.sleep(30)
+        time.sleep(20)
     except openai.error.RateLimitError as e:
-        print(f"due to {e} we are shutting down the system !!")
-        time.sleep(120)
+        print(f"due to {e}shutting down ")
+        time.sleep(10)
+
 
 
     
